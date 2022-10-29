@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Entitlement_NSAP_Widow_Pension" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="ResourceLabels" uuid="37716673-f262-4718-9a74-c95ed0c59e79">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="VPRP"/>
+	<parameter name="selected_gp_id" class="java.lang.Long"/>
+	<parameter name="lang_code" class="java.lang.String"/>
+	<parameter name="entitlement_name" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+	jd.entApplRank AS gpRank,
+	jd.bfyName AS beneficiaryName,
+       m.member_name AS memberName,
+	jd.bfyHhHead AS householdHead,
+	CASE WHEN jd.bfyWardNo IS NOT NULL AND jd.bfyWardNo <> '0'
+	THEN '(' || jd.bfyWardNo || ') ' || jd.bfyWardName
+	ELSE
+    	CASE WHEN jd.bfyWardName IS NULL OR jd.bfyWardName = 'null'
+    	THEN ''
+    	ELSE jd.bfyWardName
+    	END
+	END AS wardName,
+	v.village_name_en AS village_name,
+	sh.shg_name AS shg_name,
+	vo.federation_name AS vo_name
+FROM (SELECT
+    	ga.id AS id, ga.gp_id AS gp_id,
+    	bene->>'entId' AS entitlementId,
+    	cast(bene->>'entApplGpRank' as integer) AS entApplRank,
+    	benef->>'applId' as applID,
+    	benef->>'bfyName' as bfyName,
+    	benef->>'bfyWardNo' as bfyWardNo,
+    	benef->>'bfyWardName' as bfyWardName,
+    	benef->>'bfyHhHead' as bfyHhHead,
+    	benef->>'memId' as memId,
+    	benef->>'shgId' as shgId,
+    	benef#>>'{member, memberName}' as memberName,
+    	bene->>'orgId' as orgId,
+    	bene->>'orgLevel' as orgLevel
+	FROM vprp_transaction.gp_applications ga
+    	cross join jsonb_array_elements(ga.application_data_json::jsonb) AS bene
+    	cross join jsonb_array_elements(bene->'beneficiaries') AS benef
+    	WHERE ga.gp_id = $P{selected_gp_id}
+	) AS jd
+INNER JOIN vprp_master.entitlement e ON CAST(jd.entitlementId AS BIGINT) = e.id
+LEFT JOIN nrlm_master.member_profile m ON CAST(jd.memId AS INTEGER) = m.member_id
+LEFT JOIN nrlm_master.panchayat_master gp ON jd.gp_id = gp.panchayat_id
+LEFT JOIN nrlm_master.shg_profile sh ON (jd.shgId IS NOT NULL AND CAST(jd.shgId AS BIGINT) = sh.shg_id) OR (jd.orgId IS NOT NULL AND CAST(jd.orgId AS BIGINT) = sh.shg_id)
+LEFT JOIN nrlm_master.federation_profile vo ON (sh.parent_cbo_id) = vo.federation_id and vo.cbo_type = 1
+LEFT JOIN nrlm_master.village_master v ON (sh.village_id = v.village_id)
+WHERE e.ent_name = $P{entitlement_name}
+ORDER BY jd.entApplRank;]]>
+	</queryString>
+	<field name="gpRank" class="java.lang.String"/>
+	<field name="beneficiaryName" class="java.lang.String"/>
+	<field name="memberName" class="java.lang.String"/>
+	<field name="householdHead" class="java.lang.String"/>
+	<field name="WardName" class="java.lang.String"/>
+	<field name="village_name" class="java.lang.String"/>
+	<field name="shg_name" class="java.lang.String"/>
+	<field name="vo_name" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="45" splitType="Stretch">
+			<textField>
+				<reportElement x="180" y="0" width="200" height="30" uuid="0bab283b-6cc8-480f-b8ab-bb5d647fac82"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{WidowPension}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="30" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="50" height="30" uuid="8346ca7c-142b-4ea2-a1aa-21d0bf2e9676"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{gpRank}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="50" y="0" width="80" height="30" uuid="1972a05c-7dc7-4024-9808-b5badf5c315c"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{beneficiaryName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="130" y="0" width="70" height="30" uuid="a8c27490-3b53-41ac-877c-5e5cff9071aa"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{shgMember}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="200" y="0" width="70" height="30" uuid="9927e6fb-8985-40b1-bccf-df6841e1a789"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{householdHead}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="270" y="0" width="80" height="30" uuid="db67ef46-4584-44d4-9c32-3a1f8160abad"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{wardName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="350" y="0" width="60" height="30" uuid="fbd8d135-8a8f-46f5-9e19-dd868d1cb870"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{villageName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="410" y="0" width="70" height="30" uuid="9d7f46b8-f0f9-4df7-ac8f-3b2b354d6276"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{shgName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="480" y="0" width="70" height="30" uuid="344ae16b-9bd1-41c9-953b-9ec3ad78cd29"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{voName}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="50" height="30" uuid="ce2f8513-1495-4879-9828-2133cc0a458b"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{gpRank}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="50" y="0" width="80" height="30" uuid="f509faf3-89bf-41dc-bfab-e289d802f548"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{beneficiaryName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="130" y="0" width="70" height="30" uuid="3fbfc234-1fd6-4c0a-a721-1ce447b14022"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{memberName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="200" y="0" width="70" height="30" uuid="afd45678-f14a-4357-9a08-5633039f779f"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{householdHead}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="270" y="0" width="80" height="30" uuid="3da910f1-e100-4329-803d-0aeee1b869f9"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{WardName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="350" y="0" width="60" height="30" uuid="6d026c9e-ac30-4a39-994d-535f48f8bfd0"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{village_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="410" y="0" width="70" height="30" uuid="c118a879-49f8-4b65-b64e-9cb517dbb7af"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{shg_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="480" y="0" width="70" height="30" uuid="16e99777-f90e-47e6-ad64-d51ae0c7fe71"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{vo_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

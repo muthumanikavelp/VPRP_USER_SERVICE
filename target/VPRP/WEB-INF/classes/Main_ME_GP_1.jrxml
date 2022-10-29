@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Main_Farming&amp;AH_GP2" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="ResourceLabels" uuid="5c49f551-055a-45f9-89bc-3b26f9c01fd2">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="VPRP"/>
+	<parameter name="selected_gp_id" class="java.lang.Long"/>
+	<parameter name="lang" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+	p.panchayat_id AS gp_id,
+	CASE WHEN p.panchayat_name_local IS NULL THEN p.panchayat_name_en
+    	     ELSE (p.panchayat_name_en || ' (' || p.panchayat_name_local || ')')
+    	END AS gp_name,
+	count(distinct vo.federation_id)AS vo_count,
+      count(distinct s.shg_id) AS shg_count
+FROM
+	nrlm_master.panchayat_master p
+	LEFT JOIN nrlm_master.federation_profile vo ON vo.panchayat_id = p.panchayat_id AND vo.cbo_type = 1
+	LEFT JOIN nrlm_master.shg_profile s ON s.parent_cbo_id = vo.federation_id
+WHERE
+	p.panchayat_id = $P{selected_gp_id}
+GROUP BY p.panchayat_id;]]>
+	</queryString>
+	<field name="gp_name" class="java.lang.String"/>
+	<field name="vo_count" class="java.lang.Long"/>
+	<field name="shg_count" class="java.lang.Long"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="150">
+			<frame>
+				<reportElement mode="Opaque" x="0" y="0" width="554" height="150" backcolor="#DEEFFA" uuid="6b23da38-a1b9-4833-9cf5-7a70380efd9a"/>
+				<box topPadding="1"/>
+				<staticText>
+					<reportElement x="20" y="8" width="234" height="43" forecolor="#0F0D0D" uuid="baa7c404-cdfc-4745-893b-68009338c49e"/>
+					<textElement>
+						<font fontName="Arial-Unicode-ms" size="22" isBold="true"/>
+					</textElement>
+					<text><![CDATA[ME GP 1]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="340" y="20" width="184" height="31" forecolor="#0F0D0D" uuid="37c8c59e-ee10-41d1-b933-3e8e03129ae1"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial-Unicode-ms" size="12" isBold="false"/>
+					</textElement>
+					<text><![CDATA[VPRP  for GPDP 2022 - 2023]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="20" y="60" width="100" height="30" forecolor="#0F0D0D" uuid="d4b4648f-1d63-43cf-9d87-42ef781dce6f"/>
+					<textElement>
+						<font fontName="Arial-Unicode-ms"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Name_of_the_GP}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="120" y="60" width="190" height="30" forecolor="#0F0D0D" uuid="7f956386-1ad4-45bd-91e1-e88f8ea4ec94"/>
+					<textElement>
+						<font fontName="Arial-Unicode-ms"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{gp_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="20" y="90" width="100" height="30" forecolor="#0F0D0D" uuid="759cc727-c788-4392-ab56-8eca1ae7e0d9"/>
+					<textElement>
+						<font fontName="Arial-Unicode-ms"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Number_of_VOs}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="120" y="90" width="100" height="30" forecolor="#0F0D0D" uuid="24bee4dc-d7a4-4171-90d8-a786020ace56"/>
+					<textElement>
+						<font fontName="Arial-Unicode-ms"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{vo_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="20" y="120" width="100" height="30" forecolor="#0F0D0D" uuid="c08909ac-35f4-4a49-b945-43c1829249f8"/>
+					<textElement>
+						<font fontName="Arial-Unicode-ms"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{No_of_SHGs}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="120" y="120" width="100" height="30" forecolor="#0F0D0D" uuid="213db8f7-4804-4783-9f12-78cc7a5781a9"/>
+					<textElement>
+						<font fontName="Arial-Unicode-ms"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{shg_count}]]></textFieldExpression>
+				</textField>
+				<image scaleImage="FillFrame">
+					<reportElement x="384" y="79" width="131" height="55" uuid="970c42ff-9766-40a3-bdaa-0922482a7be6"/>
+					<imageExpression><![CDATA["https://nrlm-vprp2021.cdfi.co.in/assets/aajeevika-logo.png"]]></imageExpression>
+				</image>
+			</frame>
+		</band>
+	</title>
+	<detail>
+		<band height="210">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.spreadsheet.SpreadsheetLayout"/>
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="210" uuid="9e0611a6-ee89-4d67-a9ff-9317c886b01c"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lang">
+					<subreportParameterExpression><![CDATA[$P{lang}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Sub_ME_GP_1.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="27bbe775-33b6-4c01-b669-f4d918212ce5"/>
+			</break>
+		</band>
+		<band height="200">
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="200" uuid="568f1510-1d4d-4878-9bff-52a73f7f2525"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lang">
+					<subreportParameterExpression><![CDATA[$P{lang}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Sub_ME_GP_2.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="1acec26d-5e1f-4649-aa00-704d7026a7d9"/>
+			</break>
+		</band>
+		<band height="200">
+			<subreport>
+				<reportElement x="0" y="0" width="555" height="200" uuid="d17c2f15-7267-4a46-b9b5-709479fbcf1a"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lang">
+					<subreportParameterExpression><![CDATA[$P{lang}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Sub_ME_GP_3.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="2ad0c9ef-c512-4eb3-a26a-3f62271ac5e5"/>
+			</break>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="36">
+			<textField>
+				<reportElement mode="Opaque" x="0" y="4" width="515" height="13" backcolor="#E6E6E6" uuid="914e0052-4d4a-43d6-a852-94b7b3563b9b"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement mode="Opaque" x="515" y="4" width="40" height="13" backcolor="#E6E6E6" uuid="69ca15f4-db22-4cad-a5f1-79e20855f517"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement x="22" y="6" width="100" height="30" uuid="ab1f60ce-67b6-478c-8baa-135bf86fb019"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="200">
+			<subreport>
+				<reportElement x="0" y="0" width="200" height="200" uuid="7db622b0-b046-40dc-a7a5-955dd755394d"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Cover.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
+</jasperReport>

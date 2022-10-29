@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PGSR_PublicGoods" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="ResourceLabels" uuid="13f6a929-9fad-4b5e-910e-795e924f7f20">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="VPRP"/>
+	<parameter name="lang_code" class="java.lang.String"/>
+	<parameter name="selected_gp_id" class="java.lang.Long"/>
+	<parameter name="entitlement_name" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+    jd.entApplGpRank as rank,
+    jd.entitlementId AS entitlementId,
+	jd.orgId, jd.orgLevel,
+    vo.federation_name AS vo_name,
+    goods.applId,
+    goods.mdvalue_with_lang AS nameOfDemand,
+    details.mdvalue_with_lang AS detailsOfDemand,
+    location.mdvalue_with_lang AS location,
+    units.mdvalue_with_lang AS unitsDemanded,
+    CASE WHEN jd.bfyWardNo IS NOT NULL AND jd.bfyWardNo <> '0'
+	THEN '(' || jd.bfyWardNo || ') ' || jd.bfyWardName
+	ELSE
+    	CASE WHEN jd.bfyWardName IS NULL OR jd.bfyWardName = 'null'
+    	THEN ''
+    	ELSE jd.bfyWardName
+    	END
+	END AS wardName
+FROM (SELECT
+   	 ga.id AS id, ga.gp_id AS gp_id,
+        cast(bene->>'entApplGpRank' as integer) AS entApplGpRank,
+   	 benef->>'applId' AS applId,
+        benef->>'bfyWardNo' AS bfyWardNo,
+    	 benef->>'bfyWardName' AS bfyWardName,
+   	 CAST(bene->>'entId' AS INTEGER) AS entitlementId,
+   	 bene->>'orgId' AS orgId,
+   	 bene->>'orgLevel' AS orgLevel
+    FROM vprp_transaction.gp_applications ga
+   	 cross join jsonb_array_elements(ga.application_data_json::jsonb) AS bene
+   	 cross join jsonb_array_elements(bene->'beneficiaries') AS benef
+   	 WHERE ga.gp_id = $P{selected_gp_id}
+    ) AS jd
+INNER JOIN vprp_master.entitlement e ON CAST(jd.entitlementId AS BIGINT) = e.id
+LEFT JOIN nrlm_master.federation_profile vo ON CAST (jd.orgID as BIGINT) = vo.federation_id
+INNER JOIN    (
+	SELECT benef->>'applId' as applID,
+   	 CAST(md#>>'{metadataKey, mdKeyName}' AS VARCHAR) AS metaDataKeyName,
+   	 CASE WHEN mastlang.mst_lang_text_name IS NULL OR mastlang.mst_lang_text_name = 'null' OR mastlang.mst_lang_text_name = ''
+        	THEN md->>'applMdValue'
+        	ELSE mastlang.mst_lang_text_name || ' - ' || CAST(md->>'applMdValue' AS VARCHAR)
+        	END AS mdvalue_with_lang
+    FROM vprp_transaction.gp_applications ga
+   	 cross join jsonb_array_elements(ga.application_data_json::jsonb) AS bene
+   	 cross join jsonb_array_elements(bene->'beneficiaries') AS benef
+   	 cross join jsonb_array_elements(bene->'metadata') AS md
+	LEFT JOIN vprp_master.master_data mast ON CAST(md->>'applMdRefId' AS BIGINT) = mast.id
+	LEFT JOIN vprp_master.master_data_lang mastlang ON mast.id = mastlang.mst_id and mastlang.mst_lang_code = $P{lang_code}
+    WHERE ga.gp_id = $P{selected_gp_id}
+   	 AND CAST(md#>>'{metadataKey, mdKeyName}' AS VARCHAR) in ('publicGoods')
+	) AS goods ON goods.applId = jd.applId
+INNER JOIN    (
+	SELECT benef->>'applId' as applID,
+   	 CAST(md#>>'{metadataKey, mdKeyName}' AS VARCHAR) AS metaDataKeyName,
+   	 CASE WHEN mastlang.mst_lang_text_name IS NULL OR mastlang.mst_lang_text_name = 'null' OR mastlang.mst_lang_text_name = ''
+        	THEN md->>'applMdValue'
+        	ELSE mastlang.mst_lang_text_name || ' - ' || CAST(md->>'applMdValue' AS
+			VARCHAR)
+        	END AS mdvalue_with_lang
+    FROM vprp_transaction.gp_applications ga
+   	 cross join jsonb_array_elements(ga.application_data_json::jsonb) AS bene
+   	 cross join jsonb_array_elements(bene->'beneficiaries') AS benef
+   	 cross join jsonb_array_elements(bene->'metadata') AS md
+	LEFT JOIN vprp_master.master_data mast ON CAST(md->>'applMdRefId' AS BIGINT) = mast.id
+	LEFT JOIN vprp_master.master_data_lang mastlang ON mast.id = mastlang.mst_id and mastlang.mst_lang_code = $P{lang_code}
+    WHERE ga.gp_id = $P{selected_gp_id}
+   	 AND CAST(md#>>'{metadataKey, mdKeyName}' AS VARCHAR) in ('descDetails')
+	) AS details ON details.applId = jd.applId
+INNER JOIN    (
+	SELECT benef->>'applId' as applID,
+   	 CAST(md#>>'{metadataKey, mdKeyName}' AS VARCHAR) AS metaDataKeyName,
+   	 CASE WHEN mastlang.mst_lang_text_name IS NULL OR mastlang.mst_lang_text_name = 'null' OR mastlang.mst_lang_text_name = ''
+        	THEN md->>'applMdValue'
+        	ELSE mastlang.mst_lang_text_name || ' - ' || CAST(md->>'applMdValue' AS VARCHAR)
+        	END AS mdvalue_with_lang
+    FROM vprp_transaction.gp_applications ga
+   	 cross join jsonb_array_elements(ga.application_data_json::jsonb) AS bene
+   	 cross join jsonb_array_elements(bene->'beneficiaries') AS benef
+   	 cross join jsonb_array_elements(bene->'metadata') AS md
+	LEFT JOIN vprp_master.master_data mast ON CAST(md->>'applMdRefId' AS BIGINT) = mast.id
+	LEFT JOIN vprp_master.master_data_lang mastlang ON mast.id = mastlang.mst_id and mastlang.mst_lang_code = $P{lang_code}
+    WHERE ga.gp_id = $P{selected_gp_id}
+   	 AND CAST(md#>>'{metadataKey, mdKeyName}' AS VARCHAR) in ('noOfUnits')
+	) AS units ON units.applId = jd.applId
+INNER JOIN    (
+	SELECT benef->>'applId' as applID,
+   	 CAST(md#>>'{metadataKey, mdKeyName}' AS VARCHAR) AS metaDataKeyName,
+   	 CASE WHEN mastlang.mst_lang_text_name IS NULL OR mastlang.mst_lang_text_name = 'null' OR mastlang.mst_lang_text_name = ''
+        	THEN md->>'applMdValue'
+        	ELSE mastlang.mst_lang_text_name || ' - ' || CAST(md->>'applMdValue' AS VARCHAR)
+        	END AS mdvalue_with_lang
+    FROM vprp_transaction.gp_applications ga
+   	 cross join jsonb_array_elements(ga.application_data_json::jsonb) AS bene
+   	 cross join jsonb_array_elements(bene->'beneficiaries') AS benef
+   	 cross join jsonb_array_elements(bene->'metadata') AS md
+	LEFT JOIN vprp_master.master_data mast ON CAST(md->>'applMdRefId' AS BIGINT) = mast.id
+	LEFT JOIN vprp_master.master_data_lang mastlang ON mast.id = mastlang.mst_id and mastlang.mst_lang_code = $P{lang_code}
+    WHERE ga.gp_id = $P{selected_gp_id}
+   	 AND CAST(md#>>'{metadataKey, mdKeyName}' AS VARCHAR) in ('location')
+	) AS location ON location.applId = jd.applId
+WHERE e.ent_name = $P{entitlement_name}
+ORDER BY entApplGpRank;]]>
+	</queryString>
+	<field name="rank" class="java.lang.Long"/>
+	<field name="nameOfDemand" class="java.lang.String"/>
+	<field name="detailsOfDemand" class="java.lang.String"/>
+	<field name="unitsDemanded" class="java.lang.String"/>
+	<field name="wardName" class="java.lang.String"/>
+	<field name="vo_name" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="44" splitType="Stretch">
+			<textField>
+				<reportElement x="180" y="0" width="200" height="43" uuid="46025152-8205-4277-b1c6-48179c4096c8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{PublicGoods}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="30" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="80" height="30" uuid="b003ce83-cae0-4677-ac2e-0b445a2625e1"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{gpRank}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="80" y="0" width="100" height="30" uuid="280aeb6b-12ca-45d8-8fb7-5bc38da5ada5"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{demandName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="180" y="0" width="100" height="30" uuid="a56edfa1-24cb-406c-b11e-a20c31f882db"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{detailDemand}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="0" width="100" height="30" uuid="b498d24a-2439-4c35-9cd5-8522043c3592"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{unitsDemand}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="380" y="0" width="100" height="30" uuid="3f348b78-e926-4d73-934e-1131bbdbe8f5"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{wardName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="480" y="0" width="70" height="30" uuid="dee94894-b72d-4103-9fd5-cd3e01e4eb25"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{voName}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="80" height="30" uuid="5931765f-9f90-42dc-a682-da111abff268"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{rank}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="80" y="0" width="100" height="30" uuid="76c6bfd2-a15b-4ad2-b893-7c4c55b5ac94"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nameOfDemand}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="180" y="0" width="100" height="30" uuid="c1767cc3-92b1-49b1-a79b-ec843b173ef9"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{detailsOfDemand}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="0" width="100" height="30" uuid="9bd02af0-9169-4ba2-b281-21fbb6778d65"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{unitsDemanded}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="380" y="0" width="100" height="30" uuid="e4119b39-d594-46ca-9f1f-8aa5f76b4e8d"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{wardName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="480" y="0" width="70" height="30" uuid="7431b5b9-013e-4b65-acd0-e13d68bdbc61"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{vo_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

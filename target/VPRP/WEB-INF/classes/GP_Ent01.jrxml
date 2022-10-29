@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="GP_Ent01" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="ResourceLabels" uuid="a42f7b65-6ca5-4526-a839-e8603d8e9dcf">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="VPRP"/>
+	<parameter name="selected_gp_id" class="java.lang.Long"/>
+	<parameter name="lang_code" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+	p.panchayat_id AS gp_id,
+	CASE WHEN p.panchayat_name_local IS NULL THEN p.panchayat_name_en
+    	     ELSE (p.panchayat_name_en || ' (' || p.panchayat_name_local || ')')
+    	END AS gp_name,
+	count(distinct vo.federation_id)AS vo_count,
+      count(distinct s.shg_id) AS shg_count
+FROM
+	nrlm_master.panchayat_master p
+	LEFT JOIN nrlm_master.federation_profile vo ON vo.panchayat_id = p.panchayat_id AND vo.cbo_type = 1
+	LEFT JOIN nrlm_master.shg_profile s ON s.parent_cbo_id = vo.federation_id
+WHERE
+	p.panchayat_id = $P{selected_gp_id}
+GROUP BY p.panchayat_id;]]>
+	</queryString>
+	<field name="gp_id" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="gp_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="gp_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="panchayat_master"/>
+	</field>
+	<field name="gp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="gp_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="gp_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="panchayat_master"/>
+	</field>
+	<field name="vo_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="vo_count"/>
+		<property name="com.jaspersoft.studio.field.label" value="vo_count"/>
+	</field>
+	<field name="shg_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="shg_count"/>
+		<property name="com.jaspersoft.studio.field.label" value="shg_count"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="84" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="550" height="80" uuid="d2c7d945-5252-44f0-bc19-b9724b0b7462"/>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textField>
+					<reportElement x="0" y="0" width="380" height="80" uuid="3cbae6d3-6e60-4034-a72c-6a335f068389"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial-Unicode-ms" size="19" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{GP_Entitlement}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="390" y="30" width="150" height="40" uuid="5dc95fe8-0ad9-458f-944b-bc5a319fc229"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+						<font fontName="Arial-Unicode-ms" size="14" isBold="true" isUnderline="false"/>
+					</textElement>
+					<text><![CDATA[VPRP for GPDP 2022-2023]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="90" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="-4" width="550" height="94" uuid="95545fb6-90ec-4c4b-9c29-c3aac86fb43d"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textField>
+					<reportElement x="80" y="0" width="300" height="34" uuid="40e2014a-4391-462d-94d7-fef955fa7b4e"/>
+					<box>
+						<pen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial-Unicode-ms"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{gp_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="80" y="34" width="300" height="30" uuid="b92ae836-586a-44ed-97a8-f8f4091d0bf0"/>
+					<box>
+						<pen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial-Unicode-ms"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{vo_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="80" y="64" width="300" height="30" uuid="9ee9865f-36e0-4d0e-b822-c973c3a07ec8"/>
+					<box>
+						<pen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial-Unicode-ms"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{shg_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="0" width="80" height="34" forecolor="#0F0D0D" uuid="f27e5920-a9ad-4fc3-b807-f5fb1cb9117a"/>
+					<box>
+						<pen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial-Unicode-ms" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Name_of_the_GP}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="34" width="80" height="30" forecolor="#0F0D0D" uuid="633c43b4-fc9b-4702-8d35-eb485baebcab"/>
+					<box>
+						<pen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial-Unicode-ms" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Number_of_VOs}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="0" y="64" width="80" height="30" forecolor="#0F0D0D" uuid="9263e470-848d-496e-b56d-48b4cda87422"/>
+					<box>
+						<pen lineWidth="0.5"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="Arial-Unicode-ms" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{No_of_SHGs}]]></textFieldExpression>
+				</textField>
+				<image scaleImage="FillFrame">
+					<reportElement x="396" y="11" width="144" height="79" uuid="1a1bcc18-f4ea-4ab1-80ec-d14007dc37af"/>
+					<imageExpression><![CDATA["https://nrlm-vprp2021.cdfi.co.in/assets/aajeevika-logo.png"]]></imageExpression>
+				</image>
+			</frame>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="50" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="a030ec16-6f26-4f50-b42b-d86b8f498ca1">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["MGNREGS Job Card"]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_MGNREGSJobCard.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="51f37b39-6e4a-4bef-b26e-048ed6dc3400"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="03c6bf10-644b-4cc8-b91e-e3a4bdcb4e78"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lang_code">
+					<subreportParameterExpression><![CDATA[$P{lang_code}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["MGNREGS - Individual Work Demand"]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["MGNREGS_Individual_Work_Demand_N.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="538e23f4-63d5-4ba8-adc1-0b233b08e88a"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="bd152b01-f74d-4406-9d75-1a82c6286bc7"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["MGNREGS - Community Work Demand"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lang_code">
+					<subreportParameterExpression><![CDATA[$P{lang_code}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_MGNREGS_Community_Work_Demand.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="7c655b31-2214-442f-8e32-cb6880ab29d5"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="5b777c14-0104-41ba-a07a-0583770197a0"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lang_code">
+					<subreportParameterExpression><![CDATA[$P{lang_code}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["Old Age Pension"]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_NSAP_Old_Age_Pension.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="85247d08-fad4-4953-8c59-a4791803fa1d"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="5a412732-a645-4783-9e37-e336a8c38156"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lang_code">
+					<subreportParameterExpression><![CDATA[$P{lang_code}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["Widow Pension"]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_NSAP_Widow_Pension.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="64af82fd-dcb1-4301-97e0-016d14b945ec"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="cde94071-fe15-4cd6-88f4-e0ec02fa35e2"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="lang_code">
+					<subreportParameterExpression><![CDATA[$P{lang_code}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["Disability Pension"]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_NSAP_Disability_Pension.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="9659e76d-a85b-47ae-80f7-d0d82e25cbdb"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="3df78008-d29e-413f-b540-f06293355e49"/>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["SBM"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_IHHL_SBM.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="5544fc4c-0a0f-4b31-ad7c-d9dafcdfaff3"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="84764126-8598-4b0e-a4e6-907155775c6a"/>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["Ayushman Bharat"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_Health_Card.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="ed49cded-ee64-4e2c-842e-efe7236774c3"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="bfe336c8-3607-42c9-8f36-628a52fc7bf1"/>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["UJJWALA Scheme"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_Ujjwala.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="f0428d88-c7fe-446b-9db0-9d7fc30d6e93"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="9ba01921-5aa0-4c21-b64b-adf74292febb"/>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["Ration Card"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_Ration_Card.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="23c1ce6a-efbd-4d11-bb98-9352e958b9fb"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="8a28f605-43bf-4c51-8db1-caaac93ef727"/>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["Pradhan Mantri Sahaj Bijli Har Ghar Yojana - Saubhagya"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_Sawbhagya.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="3744ee75-7367-4db4-93b7-581884dfae99"/>
+			</break>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="555" height="50" uuid="713fc832-d96a-414d-93b2-9a8fe27a2b93"/>
+				<subreportParameter name="entitlement_name">
+					<subreportParameterExpression><![CDATA["Pradhan Mantri Awas Yojana Gramin (PMAY-G)"]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Entitlement_PMAY_G.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="bd23a5db-7026-44d6-a7bb-8e9b2bbba383"/>
+			</break>
+		</band>
+	</detail>
+	<summary>
+		<band height="200">
+			<subreport isUsingCache="true" runToBottom="true">
+				<reportElement x="0" y="0" width="200" height="200" uuid="4c69b991-93df-47c2-b4b0-7b033917106c"/>
+				<subreportParameter name="selected_gp_id">
+					<subreportParameterExpression><![CDATA[$P{selected_gp_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Cover.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="ad4b45c0-3dd1-43ac-af3f-1316c0501254"/>
+			</break>
+		</band>
+	</summary>
+</jasperReport>

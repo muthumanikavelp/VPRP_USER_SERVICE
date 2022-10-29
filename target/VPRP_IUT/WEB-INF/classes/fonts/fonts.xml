@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fontFamilies>
+    <fontFamily name="Lohit">
+        <normal><![CDATA[fonts/Lohit-Devanagari.ttf]]></normal>
+        <exportFonts/>
+    </fontFamily>
+    <fontFamily name="Ariel-Unicode-ms">
+        <normal><![CDATA[fonts/Lohit-Devanagari.ttf]]></normal>
+        <exportFonts/>
+    </fontFamily>
+</fontFamilies>

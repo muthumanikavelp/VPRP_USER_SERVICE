@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="cover" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="ResourceLabels" uuid="5c49f551-055a-45f9-89bc-3b26f9c01fd2">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="VPRP"/>
+	<parameter name="selected_gp_id" class="java.lang.Long"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+	p.panchayat_id AS gp_id,
+	CASE WHEN p.panchayat_name_local IS NULL THEN p.panchayat_name_en
+    	     ELSE (p.panchayat_name_en || ' (' || p.panchayat_name_local || ')')
+    	END AS gp_name,
+	count(distinct vo.federation_id)AS vo_count,
+      count(distinct s.shg_id) AS shg_count,
+      (select CASE WHEN block_name_local IS NULL THEN block_name_en
+    	     ELSE (block_name_en || ' (' || block_name_local || ')')
+    	END  from nrlm_master.block_master where block_id  = p.block_id) as block_name,
+    	      (select CASE WHEN district_name_local IS NULL THEN district_name_en
+    	     ELSE (district_name_en || ' (' || district_name_local || ')')
+    	END  from nrlm_master.district_master where district_id  = p.district_id ) as district_name 	
+FROM
+	nrlm_master.panchayat_master p
+	LEFT JOIN nrlm_master.federation_profile vo ON vo.panchayat_id = p.panchayat_id AND vo.cbo_type = 1
+	LEFT JOIN nrlm_master.shg_profile s ON s.parent_cbo_id = vo.federation_id
+WHERE
+	p.panchayat_id = $P{selected_gp_id}
+GROUP BY p.panchayat_id;]]>
+	</queryString>
+	<field name="gp_id" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="gp_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="gp_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="panchayat_master"/>
+	</field>
+	<field name="gp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="gp_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="gp_name"/>
+	</field>
+	<field name="vo_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="vo_count"/>
+		<property name="com.jaspersoft.studio.field.label" value="vo_count"/>
+	</field>
+	<field name="shg_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="shg_count"/>
+		<property name="com.jaspersoft.studio.field.label" value="shg_count"/>
+	</field>
+	<field name="block_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="block_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="block_name"/>
+	</field>
+	<field name="district_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="district_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="district_name"/>
+	</field>
+	<background>
+		<band/>
+	</background>
+	<pageHeader>
+		<band height="110">
+			<frame>
+				<reportElement mode="Opaque" x="0" y="10" width="554" height="100" backcolor="#DEEFFA" uuid="6b23da38-a1b9-4833-9cf5-7a70380efd9a"/>
+				<box topPadding="1">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<image scaleImage="FillFrame">
+					<reportElement x="240" y="19" width="60" height="62" uuid="70d983db-7e66-48d8-8d9f-09a2be2e6fc8"/>
+					<imageExpression><![CDATA["https://nrlm-vprp2021.cdfi.co.in/assets/Tiger.png"]]></imageExpression>
+				</image>
+				<image scaleImage="FillFrame">
+					<reportElement x="420" y="20" width="80" height="70" uuid="ba33d993-7a78-46ba-898b-1ddc29e8b41c">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<imageExpression><![CDATA["https://nrlm-vprp2021.cdfi.co.in/assets/aajeevika-logo.png"]]></imageExpression>
+				</image>
+				<image scaleImage="FillFrame">
+					<reportElement x="10" y="16" width="80" height="70" uuid="4af68d2b-7059-4d05-82e0-4697145aced8"/>
+					<imageExpression><![CDATA["https://nrlm-vprp2021.cdfi.co.in/assets/GP.png"]]></imageExpression>
+				</image>
+			</frame>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="250">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.spreadsheet.SpreadsheetLayout"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<frame>
+				<reportElement x="0" y="0" width="554" height="250" uuid="2d11a92e-06cc-459d-8d10-0132b9e1ae57"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textField>
+					<reportElement x="127" y="120" width="100" height="30" forecolor="#0F0D0D" uuid="d4b4648f-1d63-43cf-9d87-42ef781dce6f"/>
+					<textFieldExpression><![CDATA[$R{Name_of_the_GP}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="260" y="120" width="220" height="30" forecolor="#0F0D0D" uuid="7f956386-1ad4-45bd-91e1-e88f8ea4ec94"/>
+					<textFieldExpression><![CDATA[$F{gp_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="127" y="70" width="100" height="30" forecolor="#0F0D0D" uuid="759cc727-c788-4392-ab56-8eca1ae7e0d9"/>
+					<textFieldExpression><![CDATA[$R{Number_of_VOs}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="260" y="70" width="100" height="30" forecolor="#0F0D0D" uuid="24bee4dc-d7a4-4171-90d8-a786020ace56"/>
+					<textFieldExpression><![CDATA[$F{vo_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="127" y="30" width="100" height="30" forecolor="#0F0D0D" uuid="c08909ac-35f4-4a49-b945-43c1829249f8"/>
+					<textFieldExpression><![CDATA[$R{No_of_SHGs}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="260" y="30" width="100" height="30" forecolor="#0F0D0D" uuid="213db8f7-4804-4783-9f12-78cc7a5781a9"/>
+					<textFieldExpression><![CDATA[$F{shg_count}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="130" y="170" width="100" height="30" uuid="64cfee66-f1c4-46b8-af72-86049d9dcb59"/>
+					<textFieldExpression><![CDATA[$R{block_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="127" y="210" width="100" height="30" uuid="4883c81b-472a-4a3a-a1dc-379a8ab013f8"/>
+					<textFieldExpression><![CDATA[$R{district_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="260" y="170" width="220" height="30" uuid="192ec89d-d735-4eaf-84c8-44b0941621c0"/>
+					<textFieldExpression><![CDATA[$F{block_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="260" y="210" width="220" height="30" uuid="c9945e93-2abc-447b-a7d8-522dc5653e05"/>
+					<textFieldExpression><![CDATA[$F{district_name}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<break>
+				<reportElement x="0" y="0" width="100" height="1" uuid="84ed024e-3213-4c29-8c89-e0b743d6ca04"/>
+			</break>
+		</band>
+		<band height="350">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<frame>
+				<reportElement x="0" y="0" width="554" height="350" uuid="81e51eb6-45cd-43e1-af33-bed49a1de6d0">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<staticText>
+					<reportElement x="0" y="0" width="554" height="350" uuid="2fd605d0-6272-4816-9add-1f9f09ae79cb"/>
+					<box>
+						<pen lineWidth="1.75" lineStyle="Solid"/>
+					</box>
+					<text><![CDATA[                                                                                       FOREWORD
+
+The Village Poverty Reduction Plan (VPRP) is a community demand plan prepared by the SHG network under the leadership and guidance of the Block Mission Management Unit, ................................ Block, .......................... District with the support from DAY-NRLM. 
+The VPRP process provides the SHG network an opportunity, to raise their demands in a systematic manner. This can serve as the mission and plan document around which the Gram Panchayat and the SHG network work together to address the basic needs of the people. There are four components under VPRP, namely: 
+1.	Entitlement Plan
+2.	Livelihood Plan 
+3.	Public Goods, services and resource development Plan 
+4.	Social Development Plan 
+
+The demands from all the households for the above mentioned components are collected and are consolidated in this plan document. We hope that the VPRP will be used effectively in the preparation of the GPDP as the ultimate goal is to integrate the VPRP with the GPDP prepared by the Gram Panchayat to ensure that the demands are fulfilled and the people most in need are benefitted. The preparation of VPRP and its integration into GPDP guarantees the representation of demands from all sections of the community, thereby creating a fair, transparent and participatory plan. 
+
+
+Signature of VOs :                                                                                                                                                        Date 
+]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="38">
+			<textField>
+				<reportElement mode="Opaque" x="0" y="4" width="515" height="13" backcolor="#E6E6E6" uuid="914e0052-4d4a-43d6-a852-94b7b3563b9b"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement mode="Opaque" x="515" y="4" width="40" height="13" backcolor="#E6E6E6" uuid="69ca15f4-db22-4cad-a5f1-79e20855f517"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement x="20" y="4" width="100" height="30" uuid="6bdb6085-2362-45ca-a160-afed8058a437"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

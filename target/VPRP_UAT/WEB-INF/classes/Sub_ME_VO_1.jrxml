@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Sub_Farming&amp;AH_GP2" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="ResourceLabels" uuid="ef10709c-8755-4948-8e70-c2eaa851799c">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="VPRP"/>
+	<parameter name="selected_vo_id" class="java.lang.Long"/>
+	<parameter name="lang" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[select final.* from 
+(select nest.applID as applID, 
+max(nest.beneficiaryName) as beneficiaryName, 
+max(nest.householdHead) as householdHead, 
+max(nest.bfyWardName) as bfyWardName,
+max(nest.bfyWardNo) as bfyWardNo ,
+max(nest.ACTIVITY) as activity, 
+max(nest.typeofsupport) as typeofsupport, 
+max(nest.department) as department, 
+max(nest.entrank) as entrank
+from 
+(select distinct
+js.applID AS applID,
+ js.bfyName AS beneficiaryName,
+replace(js.bfyHhHead,'null','') AS householdHead,
+js.bfyWardNo,
+replace(js.bfyWardName,'null','') as bfyWardName,
+case when md.mst_type = 'sector-activity' and ml.id is not null then ml.mst_lang_text_name
+when md.mst_type = 'sector-activity' and ml.id is null then md.mst_name end as ACTIVITY,
+case when md.mst_type = 'sector-department-details' and ml.id is not null then ml.mst_lang_text_name
+when md.mst_type = 'sector-department-details' and ml.id is null then md.mst_name end as typeofsupport,
+replace((select 
+string_agg(distinct (case when ml2.id is not null 
+then ml2.mst_lang_text_name
+else  mn.mst_name end ),',')
+from vprp_master.master_data mn 
+join vprp_master.master_data_parent_map mp on mp.mst_parent_id = mn.id
+left join vprp_master.master_data_lang ml2 on ml2.mst_id = mn.id and ml2.mst_lang_code  = $P{lang}
+where mp.mst_id = md.id
+and mn.mst_type = 'department'),',',E'\n') as department,
+js.entApplRank AS entRank
+from (SELECT
+    	ga.id AS id, ga.gp_id AS gp_id,
+    	bene->>'entId' AS entitlementId,
+    	bene->>'entApplGpRank' AS entApplRank,
+    	benef->>'applId' as applID,
+    	benef->>'bfyName' as bfyName,
+    	benef->>'bfyWardNo' as bfyWardNo,
+    	benef->>'bfyWardName' as bfyWardName,
+    	benef->>'bfyHhHead' as bfyHhHead,
+    	benef->>'memId' as memId,
+    	benef->>'shgId' as shgId,
+    	benef#>>'{member, memberName}' as memberName,
+    	bene->>'orgId' as orgId,
+    	bene->>'orgLevel' as orgLevel,
+    	metaa->>'applMdKeyId' as metakey,
+    	metaa->>'applMdRefId' as metadata
+	FROM vprp_transaction.gp_applications ga
+    	cross join jsonb_array_elements(ga.application_data_json::jsonb) AS bene
+    	cross join jsonb_array_elements(bene->'beneficiaries') AS benef
+    	cross join jsonb_array_elements(bene->'metadata') as metaa) js
+		inner join nrlm_master.federation_profile fp on fp.panchayat_id  = js.gp_id and fp.cbo_type = 1 and fp.federation_id  =$P{selected_vo_id}
+       INNER JOIN vprp_master.entitlement e ON CAST(js.entitlementId AS BIGINT) = e.id 
+       and e.ent_name in ('Group ME','Individual ME')
+       inner join vprp_master.master_data md on md.id  = CAST(js.metadata AS BIGINT)
+       join vprp_master.master_data_parent_map mp on mp.mst_id = md.id
+       join vprp_master.master_data mdd on mdd.id  = mp.mst_parent_id 
+       LEFT JOIN nrlm_master.shg_profile sh ON CAST(js.shgId AS BIGINT) = sh.shg_id      
+       left join vprp_master.master_data_lang ml on ml.mst_id = md.id and ml.mst_lang_code  = $P{lang}
+       where (mdd.mst_type  = 'sector' and mdd.mst_name  = 'Manufacturing')	
+       or mdd.mst_type = 'me-support-category') nest
+       group by nest.applID, nest.beneficiaryName) final where final.activity != ''
+	   order by final.entrank]]>
+	</queryString>
+	<field name="applid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="applid"/>
+		<property name="com.jaspersoft.studio.field.label" value="applid"/>
+	</field>
+	<field name="beneficiaryname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="beneficiaryname"/>
+		<property name="com.jaspersoft.studio.field.label" value="beneficiaryname"/>
+	</field>
+	<field name="householdhead" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="householdhead"/>
+		<property name="com.jaspersoft.studio.field.label" value="householdhead"/>
+	</field>
+	<field name="bfywardname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bfywardname"/>
+		<property name="com.jaspersoft.studio.field.label" value="bfywardname"/>
+	</field>
+	<field name="bfywardno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bfywardno"/>
+		<property name="com.jaspersoft.studio.field.label" value="bfywardno"/>
+	</field>
+	<field name="activity" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="activity"/>
+		<property name="com.jaspersoft.studio.field.label" value="activity"/>
+	</field>
+	<field name="typeofsupport" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="typeofsupport"/>
+		<property name="com.jaspersoft.studio.field.label" value="typeofsupport"/>
+	</field>
+	<field name="department" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="department"/>
+		<property name="com.jaspersoft.studio.field.label" value="department"/>
+	</field>
+	<field name="entrank" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="entrank"/>
+		<property name="com.jaspersoft.studio.field.label" value="entrank"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="60" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="60" y="0" width="400" height="30" uuid="df9537c1-3afb-4f71-a2b7-f91d0d833b51"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Report of Manufacturing Sector under ME]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="30" width="510" height="30" uuid="a3d908ac-2f04-41f8-a82e-adfce585ea79"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="7" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Department Providing supports : MoRD, MSME, Department of Tribal Welfare, Ministry of Textile, Ministry of Food Processing Industry, Ministry of Agriculture, Ministry of Minority Affairs, Ministery of Social Justice and empowerment, DFS for PM Mudra, Ministry of Skill Development & Entrepreneurship]]></text>
+			</staticText>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="85">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.spreadsheet.SpreadsheetLayout"/>
+			<textField>
+				<reportElement x="380" y="50" width="80" height="30" uuid="9ce4f225-e7a1-415f-8f28-8abaadfe3e47"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{typeofsupport}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="270" y="50" width="110" height="30" uuid="ab5ba1a9-5ebd-4f37-9729-56b2af0cf07c"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="220" y="50" width="50" height="30" uuid="60cd6e84-6836-4758-9a03-c368b0baef0b"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{wardno}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="160" y="50" width="60" height="30" uuid="ff16fad8-9568-4054-a482-2413b3b3c471"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{WardName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="50" width="70" height="30" uuid="f368384a-4164-4ec6-bab8-992a111b690f"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{householdHead}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="50" width="90" height="30" uuid="8b662e4a-8b37-4f8d-8c8d-b904c4b8ec7d"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{beneficiaryName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="460" y="50" width="50" height="30" uuid="fd472208-30a3-4c9c-ae95-84c7955ad257"/>
+				<box>
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial-Unicode-ms" size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{gpRank}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="31" splitType="Stretch">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.spreadsheet.SpreadsheetLayout"/>
+			<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="90" height="31" uuid="f7c4dd5b-63d5-40d8-b184-ce6e7ebde9e0">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5d3fdd81-6d1e-4874-9e5e-6a5b083b4c49"/>
+				</reportElement>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial-Unicode-ms" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{beneficiaryname}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="90" y="0" width="70" height="31" uuid="05665eb0-611c-405a-b141-f50471e13d0a">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="0d1c6893-ea51-41e2-a682-21834ff13537"/>
+				</reportElement>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial-Unicode-ms" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{householdhead}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="160" y="0" width="60" height="31" uuid="6ba19dd9-1a87-4848-9fe3-e3b827a22776">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a9c81ab2-3f5c-465f-9242-9c9fa58f3ce7"/>
+				</reportElement>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial-Unicode-ms" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bfywardname}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="220" y="0" width="50" height="31" uuid="c75d475f-0fec-4511-ab70-4cf4f4792611">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="0bc5418b-8ebb-441e-9558-e21bbbcfd701"/>
+				</reportElement>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial-Unicode-ms" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bfywardno}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="270" y="0" width="110" height="31" uuid="a08490ba-4a3a-46f4-9f17-daeb613ae705">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="8c6a9a7f-4a1a-405d-bd41-62272a5422fc"/>
+				</reportElement>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial-Unicode-ms" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{activity}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="380" y="0" width="80" height="31" uuid="18b4dc72-d41d-4ed8-a143-39509a78b605">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7744b596-f337-4e78-a3b0-e849bf9f9038"/>
+				</reportElement>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial-Unicode-ms" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{typeofsupport}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+				<reportElement x="460" y="0" width="50" height="31" uuid="5528daad-3e4a-4867-b360-4f92cf681b66">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9993f8d9-df91-4bd2-996b-d71365381e41"/>
+				</reportElement>
+				<box leftPadding="5" rightPadding="5">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial-Unicode-ms"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{entrank}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
